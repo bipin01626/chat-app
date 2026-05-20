@@ -5,15 +5,25 @@ const io = require("socket.io")(http);
 
 app.use(express.static("public"));
 
-let users = 0;
+let users = [];
 
 io.on("connection", (socket) => {
 
-  users++;
-  let userName = "User " + users;
+  // ❌ block extra users
+  if (users.length >= 2) {
+    socket.emit("full", "Only 2 users allowed ❌");
+    socket.disconnect();
+    return;
+  }
 
-  io.emit("users", users);
+  // assign names
+  let userName = users.length === 0 ? "Me" : "User";
 
+  users.push({ id: socket.id, name: userName });
+
+  io.emit("users", users.map(u => u.name));
+
+  // message
   socket.on("chat message", (msg) => {
     io.emit("chat message", {
       user: userName,
@@ -21,9 +31,10 @@ io.on("connection", (socket) => {
     });
   });
 
+  // disconnect
   socket.on("disconnect", () => {
-    users--;
-    io.emit("users", users);
+    users = users.filter(u => u.id !== socket.id);
+    io.emit("users", users.map(u => u.name));
   });
 
 });

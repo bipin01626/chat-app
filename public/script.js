@@ -1,5 +1,6 @@
 const socket = io();
 
+// send message
 function sendText() {
   let input = document.getElementById("msg");
   let msg = input.value;
@@ -17,9 +18,14 @@ socket.on("chat message", (data) => {
   document.getElementById("messages").appendChild(li);
 });
 
-// online users
-socket.on("users", (count) => {
-  document.getElementById("userCount").innerText = count;
+// show users
+socket.on("users", (users) => {
+  document.getElementById("users").innerText = users.join(", ");
+});
+
+// full alert
+socket.on("full", (msg) => {
+  alert(msg);
 });
 
 // enter key
